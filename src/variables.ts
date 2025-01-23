@@ -1,4 +1,4 @@
-import { CompanionVariableDefinition, CompanionVariableValues } from '@companion-module/base'
+import type { CompanionVariableDefinition, CompanionVariableValues } from '@companion-module/base'
 
 import type { KLVRChargerProInstance } from './main.js'
 
@@ -11,7 +11,7 @@ export function UpdateVariableDefinitions(self: KLVRChargerProInstance): void {
 	variables.push({ variableId: 'firmwareBuild', name: 'Firmware Build' })
 
 	for (const key in self.chargerStatus.batteries) {
-		const batteryNumber = parseInt(key) + 1
+		const batteryNumber = Number.parseInt(key) + 1
 
 		variables.push(
 			{ variableId: `battery${batteryNumber}_BayTemperature`, name: `Battery ${batteryNumber} Bay Temperature` },
@@ -63,9 +63,9 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 			totalBatteriesError++
 		}
 
-		const batteryNumber = parseInt(key) + 1
+		const batteryNumber = Number.parseInt(key) + 1
 
-		variableValues[`battery${batteryNumber}_BayTemperature`] = parseFloat(battery.batteryBayTempC.toFixed(2))
+		variableValues[`battery${batteryNumber}_BayTemperature`] = Number.parseFloat(battery.batteryBayTempC.toFixed(2))
 
 		const slotState = battery.slotState
 		let slotStateMsg = slotState
@@ -83,7 +83,9 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 
 		variableValues[`battery${batteryNumber}_SlotState`] = slotStateMsg
 
-		variableValues[`battery${batteryNumber}_ChargePercent`] = parseFloat(battery.stateOfChargePercent.toFixed(2))
+		variableValues[`battery${batteryNumber}_ChargePercent`] = Number.parseFloat(
+			battery.stateOfChargePercent.toFixed(2),
+		)
 		variableValues[`battery${batteryNumber}_TimeRemaining`] = battery.timeRemainingSeconds
 		variableValues[`battery${batteryNumber}_ErrorMsg`] = battery.errorMsg
 	}

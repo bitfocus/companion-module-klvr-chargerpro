@@ -10,8 +10,8 @@
 		"build": "rimraf dist && run build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"dev": "tsc -p tsconfig.build.json --watch",
-		"lint:fix": "biome check --write",
-		"lint:fix:unsafe": "biome check --fix --unsafe",
+		"lint:raw": "biome check",
+		"lint:raw:unsafe": "biome check --fix --unsafe",
 		"lint": "biome check"
 	},
 	"license": "MIT",

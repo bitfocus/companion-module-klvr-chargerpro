@@ -27,7 +27,7 @@ export function UpdateFeedbacks(self: KLVRChargerProInstance): void {
 			callback: (feedback) => {
 				const state = feedback.options.state
 
-				if (self.chargerStatus.deviceStatus == state) {
+				if (self.chargerStatus.deviceStatus === state) {
 					return true
 				}
 
@@ -70,7 +70,7 @@ export function UpdateFeedbacks(self: KLVRChargerProInstance): void {
 				const state = feedback.options.state
 
 				try {
-					if (self.chargerStatus.batteries && self.chargerStatus.batteries[slot].slotState == state) {
+					if (self.chargerStatus.batteries && self.chargerStatus.batteries[slot].slotState === state) {
 						return true
 					}
 				} catch (error) {

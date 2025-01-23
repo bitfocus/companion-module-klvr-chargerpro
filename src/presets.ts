@@ -1,8 +1,8 @@
 import {
 	combineRgb,
-	CompanionButtonPresetDefinition,
-	CompanionTextPresetDefinition,
-	CompanionPresetDefinitions,
+	type CompanionButtonPresetDefinition,
+	type CompanionTextPresetDefinition,
+	type CompanionPresetDefinitions,
 } from '@companion-module/base'
 
 import type { KLVRChargerProInstance } from './main.js'
@@ -11,7 +11,7 @@ export function UpdatePresets(self: KLVRChargerProInstance): void {
 	const presets: (CompanionButtonPresetDefinition | CompanionTextPresetDefinition)[] = []
 
 	for (const key in self.chargerStatus.batteries) {
-		const batteryNumber = parseInt(key) + 1
+		const batteryNumber = Number.parseInt(key) + 1
 
 		presets.push({
 			category: `Battery ${batteryNumber}`,

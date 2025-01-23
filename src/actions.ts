@@ -6,8 +6,8 @@ export function UpdateActions(self: KLVRChargerProInstance): void {
 			name: 'Identify Device',
 			description: 'Flashes the lights on the device',
 			options: [],
-			callback: function () {
-				self.CHARGER.deviceIdentify()
+			callback: () => {
+				self.apiInstance.deviceIdentify()
 			},
 		},
 	})
