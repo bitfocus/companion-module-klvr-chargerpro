@@ -7,8 +7,6 @@ import { UpdateVariableDefinitions } from './variables.js'
 import { UpdatePresets } from './presets.js'
 import { InitConnection } from './api.js'
 
-import type { KLVRCharger } from '@bitfocusas/klvr-charger'
-
 export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig // Setup in init()
 	INTERVAL!: NodeJS.Timeout
@@ -28,11 +26,8 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 
 	constructor(internal: unknown) {
 		super(internal)
-		this.INTERVAL as NodeJS.Timeout
-		this.CHARGER as typeof KLVRCharger
-		this.deviceInfo as DeviceInfo
-		this.chargerStatus as ChargerStatus
-		this.CHOICES_SLOTS as { id: string; label: string }[]
+
+		this.CHOICES_SLOTS = []
 	}
 
 	async init(config: ModuleConfig): Promise<void> {
@@ -45,7 +40,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 		this.updateVariableDefinitions() // export variable definitions
 		this.updatePresets() // export presets
 
-		this.initConnection()
+		await this.initConnection()
 	}
 	// When module gets deleted
 	async destroy(): Promise<void> {
@@ -56,7 +51,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 	async configUpdated(config: ModuleConfig): Promise<void> {
 		this.config = config
 
-		this.initConnection()
+		await this.initConnection()
 	}
 
 	// Return config fields for web config
@@ -80,8 +75,8 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 		UpdatePresets(this)
 	}
 
-	initConnection(): void {
-		InitConnection(this)
+	async initConnection(): Promise<void> {
+		await InitConnection(this)
 	}
 }
 

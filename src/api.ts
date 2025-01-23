@@ -9,11 +9,13 @@ import { KLVRCharger } from '@bitfocusas/klvr-charger'
 export async function InitConnection(self: KLVRChargerProInstance): Promise<void> {
 	self.CHARGER = KLVRCharger(self.config.ip)
 
-	getData(self) // Get initial data once
+	await getData(self) // Get initial data once
 
 	if (self.config.enablePolling) {
 		self.INTERVAL = setInterval(() => {
-			getData(self)
+			getData(self).catch((error) => {
+				self.log('error', `Error getting data: ${error.message}`)
+			})
 		}, self.config.pollingInterval)
 	}
 }
@@ -69,7 +71,7 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 }
 
 export function buildSlotChoices(self: KLVRChargerProInstance): { id: string; label: string }[] {
-	let choices = []
+	const choices = []
 
 	if (!self.chargerStatus.batteries) {
 		choices.push({ id: '0', label: 'Battery Slot #1' })

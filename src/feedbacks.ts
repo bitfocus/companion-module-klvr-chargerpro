@@ -25,7 +25,7 @@ export function UpdateFeedbacks(self: KLVRChargerProInstance): void {
 				},
 			],
 			callback: (feedback) => {
-				let state = feedback.options.state
+				const state = feedback.options.state
 
 				if (self.chargerStatus.deviceStatus == state) {
 					return true
@@ -66,14 +66,15 @@ export function UpdateFeedbacks(self: KLVRChargerProInstance): void {
 				},
 			],
 			callback: (feedback) => {
-				let slot: string = String(feedback.options.slot)
-				let state = feedback.options.state
+				const slot: string = String(feedback.options.slot)
+				const state = feedback.options.state
 
 				try {
 					if (self.chargerStatus.batteries && self.chargerStatus.batteries[slot].slotState == state) {
 						return true
 					}
-				} catch (e) {
+				} catch (error) {
+					console.log(error)
 					self.log('warn', `Slot ${slot} not found`)
 				}
 

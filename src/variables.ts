@@ -3,7 +3,7 @@ import { CompanionVariableDefinition, CompanionVariableValues } from '@companion
 import type { KLVRChargerProInstance } from './main.js'
 
 export function UpdateVariableDefinitions(self: KLVRChargerProInstance): void {
-	let variables: CompanionVariableDefinition[] = []
+	const variables: CompanionVariableDefinition[] = []
 
 	variables.push({ variableId: 'deviceInternalTemperature', name: 'Device Internal Temperature' })
 	variables.push({ variableId: 'name', name: 'Device Name' })
@@ -35,7 +35,7 @@ export function UpdateVariableDefinitions(self: KLVRChargerProInstance): void {
 }
 
 export function CheckVariables(self: KLVRChargerProInstance): void {
-	let variableValues: CompanionVariableValues = {}
+	const variableValues: CompanionVariableValues = {}
 
 	variableValues.deviceInternalTemperature = self.deviceInfo.deviceInternalTemperatureC
 	variableValues.name = self.deviceInfo.name
@@ -67,7 +67,7 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 
 		variableValues[`battery${batteryNumber}_BayTemperature`] = parseFloat(battery.batteryBayTempC.toFixed(2))
 
-		let slotState = battery.slotState
+		const slotState = battery.slotState
 		let slotStateMsg = slotState
 		if (slotState === 'done') {
 			slotStateMsg = 'Done'
