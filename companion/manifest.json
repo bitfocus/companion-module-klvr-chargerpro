@@ -3,7 +3,7 @@
 	"name": "klvr-chargerpro",
 	"shortname": "klvr-chargerpro",
 	"description": "Controls the KLVR Charger Pro and gets status information",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-klvr-chargerpro.git",
 	"bugs": "https://github.com/bitfocus/companion-module-klvr-chargerpro/issues",

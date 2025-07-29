@@ -8,14 +8,16 @@ interface DeviceInfo {
 }
 
 interface Battery {
+	index: number
 	batteryBayTempC: number
-	slotState: string
+	batteryDetected: string
+	slotState: 'error' | 'done' | 'charging' | 'not charging' | 'empty'
 	stateOfChargePercent: number
 	timeRemainingSeconds: number
 	errorMsg: string
 }
 
 interface ChargerStatus {
-	deviceStatus: string
-	batteries: { [key: string]: Battery } // String keys for the batteries object
+	deviceStatus: 'ok' | 'error'
+	batteries: Battery[] // Array of batteries instead of object
 }

@@ -10,8 +10,8 @@ export function UpdateVariableDefinitions(self: KLVRChargerProInstance): void {
 	variables.push({ variableId: 'firmwareVersion', name: 'Firmware Version' })
 	variables.push({ variableId: 'firmwareBuild', name: 'Firmware Build' })
 
-	for (const key in self.chargerStatus.batteries) {
-		const batteryNumber = Number.parseInt(key) + 1
+	for (const battery of self.chargerStatus.batteries) {
+		const batteryNumber = battery.index + 1
 
 		variables.push(
 			{ variableId: `battery${batteryNumber}_BayTemperature`, name: `Battery ${batteryNumber} Bay Temperature` },
@@ -48,9 +48,7 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 	let totalBatteriesError = 0
 	let totalBatteriesEmpty = 0
 
-	for (const key in self.chargerStatus.batteries) {
-		const battery = self.chargerStatus.batteries[key]
-
+	for (const battery of self.chargerStatus.batteries) {
 		if (battery.slotState === 'done') {
 			totalBatteriesDone++
 		} else if (battery.slotState === 'charging') {
@@ -63,12 +61,12 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 			totalBatteriesError++
 		}
 
-		const batteryNumber = Number.parseInt(key) + 1
+		const batteryNumber = battery.index + 1
 
 		variableValues[`battery${batteryNumber}_BayTemperature`] = Number.parseFloat(battery.batteryBayTempC.toFixed(2))
 
 		const slotState = battery.slotState
-		let slotStateMsg = slotState
+		let slotStateMsg: string = slotState
 		if (slotState === 'done') {
 			slotStateMsg = 'Done'
 		} else if (slotState === 'charging') {

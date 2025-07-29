@@ -6,15 +6,49 @@ import { UpdatePresets } from './presets.js'
 import { KLVRCharger } from '@bitfocusas/klvr-charger'
 
 export async function InitConnection(self: KLVRChargerProInstance): Promise<void> {
-	self.apiInstance = KLVRCharger(self.config.ip)
-	self.apiCurrentlyWorking = false
-	await getData(self) // Get initial data once
-	if (self.config.enablePolling) {
-		self.apiPollIntervalInstance = setInterval(() => {
-			getData(self).catch((error) => {
-				self.log('error', `Error getting data: ${error.message}`)
-			})
-		}, self.config.pollingInterval)
+	try {
+		// Validate config before proceeding
+		if (!self.config) {
+			throw new Error('Configuration is not available')
+		}
+
+		if (!self.config.ip) {
+			throw new Error('IP address is not configured')
+		}
+
+		self.log('debug', `Initializing API connection to ${self.config.ip}`)
+
+		self.apiInstance = KLVRCharger(self.config.ip)
+		self.apiCurrentlyWorking = false
+
+		// Add timeout for initial data fetch
+		try {
+			await Promise.race([
+				getData(self),
+				new Promise((_, reject) => setTimeout(() => reject(new Error('Initial data fetch timeout')), 10000)),
+			])
+			self.log('debug', 'Initial data fetch completed successfully')
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			self.log('warn', `Initial data fetch failed: ${errorMessage}. Module will continue with default values.`)
+			// Don't throw here - let the module continue with default values
+		}
+
+		if (self.config.enablePolling) {
+			self.log('debug', `Setting up polling with interval ${self.config.pollingInterval}ms`)
+			self.apiPollIntervalInstance = setInterval(() => {
+				getData(self).catch((error) => {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					self.log('error', `Error getting data: ${errorMessage}`)
+				})
+			}, self.config.pollingInterval)
+		}
+
+		self.log('debug', 'API connection initialized successfully')
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		self.log('error', `Failed to initialize API connection: ${errorMessage}`)
+		throw error
 	}
 }
 
@@ -29,7 +63,15 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', 'Getting Device Info')
 		}
 
-		self.deviceInfo = await self.apiInstance.deviceInfo()
+		// Add timeout for deviceInfo call
+		const deviceInfoResult = await Promise.race([
+			self.apiInstance.deviceInfo(),
+			new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Device info timeout')), 5000)),
+		])
+
+		if (deviceInfoResult) {
+			self.deviceInfo = deviceInfoResult
+		}
 
 		if (self.config.verbose) {
 			self.log('debug', `Device Info: ${JSON.stringify(self.deviceInfo)}`)
@@ -39,7 +81,15 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', 'Getting Charger Status')
 		}
 
-		self.chargerStatus = await self.apiInstance.chargerStatus()
+		// Add timeout for chargerStatus call
+		const chargerStatusResult = await Promise.race([
+			self.apiInstance.chargerStatus(),
+			new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Charger status timeout')), 5000)),
+		])
+
+		if (chargerStatusResult) {
+			self.chargerStatus = chargerStatusResult
+		}
 
 		if (self.config.verbose) {
 			self.log('debug', `Charger Status: ${JSON.stringify(self.chargerStatus)}`)
@@ -73,7 +123,9 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 		self.checkFeedbacks()
 		CheckVariables(self)
 	} catch (error) {
-		self.log('error', `Error getting data: ${error.message}`)
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		self.log('error', `Error getting data: ${errorMessage}`)
+		throw error // Re-throw to let caller handle it
 	} finally {
 		self.apiCurrentlyWorking = false
 	}
@@ -82,13 +134,13 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 export function buildSlotChoices(self: KLVRChargerProInstance): { id: string; label: string }[] {
 	const choices = []
 
-	if (!self.chargerStatus.batteries) {
+	if (!self.chargerStatus.batteries || self.chargerStatus.batteries.length === 0) {
 		choices.push({ id: '0', label: 'Battery Slot #1' })
 	}
 
-	for (const key in self.chargerStatus.batteries) {
-		const batteryNumber = Number.parseInt(key) + 1
-		choices.push({ id: `${key}`, label: `Battery Slot #${batteryNumber}` })
+	for (const battery of self.chargerStatus.batteries) {
+		const batteryNumber = battery.index + 1
+		choices.push({ id: `${battery.index}`, label: `Battery Slot #${batteryNumber}` })
 	}
 
 	return choices

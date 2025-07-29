@@ -9,7 +9,12 @@ import { InitConnection } from './api.js'
 import type { KLVRCharger } from '@bitfocusas/klvr-charger'
 
 export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
-	config!: ModuleConfig // Setup in init()
+	config: ModuleConfig = {
+		ip: '192.168.0.1',
+		enablePolling: true,
+		pollingInterval: 1000,
+		verbose: false,
+	}
 	apiPollIntervalInstance!: NodeJS.Timeout
 	apiInstance!: ReturnType<typeof KLVRCharger>
 	apiCurrentlyWorking = false
@@ -23,7 +28,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 
 	chargerStatus: ChargerStatus = {
 		deviceStatus: 'ok',
-		batteries: {},
+		batteries: [],
 	}
 
 	CHOICES_SLOTS: { id: string; label: string }[] = []
@@ -34,25 +39,74 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 	}
 
 	async init(config: ModuleConfig): Promise<void> {
-		this.config = config
-		this.updateStatus(InstanceStatus.Ok)
-		this.updateActions() // export actions
-		this.updateFeedbacks() // export feedbacks
-		this.updateVariableDefinitions() // export variable definitions
-		this.updatePresets() // export presets
+		try {
+			this.log('debug', 'Starting module initialization')
 
-		await this.initConnection()
+			// Ensure config has all required properties with defaults
+			this.config = {
+				ip: config?.ip || '192.168.0.1',
+				enablePolling: config?.enablePolling !== undefined ? config.enablePolling : true,
+				pollingInterval: config?.pollingInterval || 1000,
+				verbose: config?.verbose !== undefined ? config.verbose : false,
+			}
+
+			this.log('debug', `Initializing with config: ${JSON.stringify(this.config)}`)
+
+			// Set status before attempting connection
+			this.updateStatus(InstanceStatus.Connecting)
+
+			// Update all definitions first
+			this.updateActions()
+			this.updateFeedbacks()
+			this.updateVariableDefinitions()
+			this.updatePresets()
+
+			// Initialize connection
+			await this.initConnection()
+
+			this.log('debug', 'Module initialization completed')
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			this.log('error', `Failed to initialize module: ${errorMessage}`)
+			this.updateStatus(InstanceStatus.ConnectionFailure)
+			throw error
+		}
 	}
+
 	// When module gets deleted
 	async destroy(): Promise<void> {
-		clearInterval(this.apiPollIntervalInstance)
+		this.log('debug', 'Destroying module')
+		if (this.apiPollIntervalInstance) {
+			clearInterval(this.apiPollIntervalInstance)
+		}
 		this.log('debug', 'destroy')
 	}
 
 	async configUpdated(config: ModuleConfig): Promise<void> {
-		this.config = config
+		try {
+			this.log('debug', 'Config update requested')
 
-		await this.initConnection()
+			// Ensure config has all required properties with defaults
+			this.config = {
+				ip: config?.ip || '192.168.0.1',
+				enablePolling: config?.enablePolling !== undefined ? config.enablePolling : true,
+				pollingInterval: config?.pollingInterval || 1000,
+				verbose: config?.verbose !== undefined ? config.verbose : false,
+			}
+
+			this.log('debug', `Config updated: ${JSON.stringify(this.config)}`)
+
+			// Clear existing interval if polling was enabled
+			if (this.apiPollIntervalInstance) {
+				clearInterval(this.apiPollIntervalInstance)
+			}
+
+			await this.initConnection()
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			this.log('error', `Failed to update config: ${errorMessage}`)
+			this.updateStatus(InstanceStatus.ConnectionFailure)
+		}
 	}
 
 	// Return config fields for web config
@@ -77,7 +131,16 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 	}
 
 	async initConnection(): Promise<void> {
-		await InitConnection(this)
+		try {
+			this.log('debug', 'Initializing connection')
+			await InitConnection(this)
+			this.log('debug', 'Connection initialized successfully')
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			this.log('error', `Failed to initialize connection: ${errorMessage}`)
+			this.updateStatus(InstanceStatus.ConnectionFailure)
+			throw error
+		}
 	}
 }
 

@@ -10,8 +10,8 @@ import type { KLVRChargerProInstance } from './main.js'
 export function UpdatePresets(self: KLVRChargerProInstance): void {
 	const presets: (CompanionButtonPresetDefinition | CompanionTextPresetDefinition)[] = []
 
-	for (const key in self.chargerStatus.batteries) {
-		const batteryNumber = Number.parseInt(key) + 1
+	for (const battery of self.chargerStatus.batteries) {
+		const batteryNumber = battery.index + 1
 
 		presets.push({
 			category: `Battery ${batteryNumber}`,

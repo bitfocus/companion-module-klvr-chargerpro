@@ -70,8 +70,11 @@ export function UpdateFeedbacks(self: KLVRChargerProInstance): void {
 				const state = feedback.options.state
 
 				try {
-					if (self.chargerStatus.batteries && self.chargerStatus.batteries[slot].slotState === state) {
-						return true
+					if (self.chargerStatus.batteries) {
+						const battery = self.chargerStatus.batteries.find((b) => String(b.index) === slot)
+						if (battery && battery.slotState === state) {
+							return true
+						}
 					}
 				} catch (error) {
 					console.log(error)

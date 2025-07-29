@@ -1,13 +1,13 @@
 {
 	"name": "klvr-chargerpro",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"main": "dist/main.js",
 	"type": "module",
 	"scripts": {
 		"postinstall": "husky",
 		"format": "prettier -w .",
-		"package": "run build && companion-module-build",
-		"build": "rimraf dist && run build:main",
+		"package": "npm run build && companion-module-build",
+		"build": "rimraf dist && npm run build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"dev": "tsc -p tsconfig.build.json --watch",
 		"lint:raw": "biome check",
@@ -20,7 +20,7 @@
 		"url": "git+https://github.com/bitfocus/companion-module-klvr-chargerpro.git"
 	},
 	"dependencies": {
-		"@bitfocusas/klvr-charger": "^1.0.2",
+		"@bitfocusas/klvr-charger": "^2.0.0",
 		"@companion-module/base": "~1.11.2"
 	},
 	"devDependencies": {
