@@ -34,12 +34,8 @@
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"prettier --write"
-		],
 		"*.{ts,tsx,js,jsx}": [
-			"yarn lint:raw --fix"
+			"npm run lint:raw:unsafe"
 		]
-	},
-	"packageManager": "yarn@4.5.3"
+	}
 }
