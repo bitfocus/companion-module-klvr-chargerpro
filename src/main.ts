@@ -86,6 +86,9 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 		try {
 			this.log('debug', 'Config update requested')
 
+			// Set status to connecting immediately when config changes
+			this.updateStatus(InstanceStatus.Connecting)
+
 			// Ensure config has all required properties with defaults
 			this.config = {
 				ip: config?.ip || '192.168.0.1',

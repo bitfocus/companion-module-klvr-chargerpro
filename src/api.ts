@@ -1,4 +1,5 @@
 import type { KLVRChargerProInstance } from './main.js'
+import { InstanceStatus } from '@companion-module/base'
 
 import { UpdateFeedbacks } from './feedbacks.js'
 import { UpdateVariableDefinitions, CheckVariables } from './variables.js'
@@ -122,9 +123,14 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 
 		self.checkFeedbacks()
 		CheckVariables(self)
+
+		// Update status to OK when we successfully get data
+		self.updateStatus(InstanceStatus.Ok)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		self.log('error', `Error getting data: ${errorMessage}`)
+		// Update status to indicate connection failure
+		self.updateStatus(InstanceStatus.ConnectionFailure)
 		throw error // Re-throw to let caller handle it
 	} finally {
 		self.apiCurrentlyWorking = false
