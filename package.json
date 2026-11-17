@@ -10,9 +10,8 @@
 		"build": "rimraf dist && run build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"dev": "tsc -p tsconfig.build.json --watch",
-		"lint:raw": "biome check",
-		"lint:raw:unsafe": "biome check --fix --unsafe",
-		"lint": "biome check"
+		"lint:raw": "eslint",
+		"lint": "run lint:raw ."
 	},
 	"license": "MIT",
 	"repository": {
@@ -28,18 +27,23 @@
 		"@companion-module/base": "~1.15.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
 		"@companion-module/tools": "^2.9.1",
 		"@types/node": "^26",
+		"eslint": "^9.36.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.2.11",
+		"prettier": "^3.6.2",
 		"rimraf": "^6.0.1",
-		"typescript": "~6.0.3"
+		"typescript": "~6.0.3",
+		"typescript-eslint": "^8.44.1"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"lint-staged": {
+		"*.{css,json,md,scss}": [
+			"prettier --write"
+		],
 		"*.{ts,tsx,js,jsx}": [
-			"yarn lint:raw:unsafe"
+			"yarn lint:raw --fix"
 		]
 	},
 	"packageManager": "yarn@4.18.1"
