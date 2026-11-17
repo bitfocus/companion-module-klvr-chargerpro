@@ -22,23 +22,15 @@ export async function InitConnection(self: KLVRChargerProInstance): Promise<void
 		self.apiInstance = KLVRCharger(self.config.ip)
 		self.apiCurrentlyWorking = false
 
-		// Add timeout for initial data fetch
-		try {
-			await Promise.race([
-				getData(self),
-				new Promise((_, reject) => setTimeout(() => reject(new Error('Initial data fetch timeout')), 10000)),
-			])
-			self.log('debug', 'Initial data fetch completed successfully')
-		} catch (error) {
+		void getData(self).catch((error: unknown) => {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			self.log('warn', `Initial data fetch failed: ${errorMessage}. Module will continue with default values.`)
-			// Don't throw here - let the module continue with default values
-		}
+			self.log('error', `Error getting data: ${errorMessage}`)
+		})
 
 		if (self.config.enablePolling) {
 			self.log('debug', `Setting up polling with interval ${self.config.pollingInterval}ms`)
 			self.apiPollIntervalInstance = setInterval(() => {
-				getData(self).catch((error) => {
+				getData(self).catch((error: unknown) => {
 					const errorMessage = error instanceof Error ? error.message : String(error)
 					self.log('error', `Error getting data: ${errorMessage}`)
 				})
@@ -131,7 +123,7 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 		self.log('error', `Error getting data: ${errorMessage}`)
 		// Update status to indicate connection failure
 		self.updateStatus(InstanceStatus.ConnectionFailure)
-		throw error // Re-throw to let caller handle it
+		throw error
 	} finally {
 		self.apiCurrentlyWorking = false
 	}
