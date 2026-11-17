@@ -7,6 +7,7 @@ import { UpdatePresets } from './presets.js'
 import { KLVRCharger } from '@bitfocusas/klvr-charger'
 
 export async function InitConnection(self: KLVRChargerProInstance): Promise<void> {
+	self.apiInstance = null
 	try {
 		// Validate config before proceeding
 		if (!self.config) {
@@ -56,8 +57,11 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 	if (self.apiCurrentlyWorking) {
 		return
 	}
-	// A config change swaps apiInstance; results from the old one must not touch status
+	// A config change or destroy swaps apiInstance; results from the old one must not touch the instance
 	const api = self.apiInstance
+	if (!api) return
+	// The client has no timeout or abort, so a request we stop waiting on keeps its socket open
+	let pendingRequest: Promise<unknown> = Promise.resolve()
 	try {
 		self.apiCurrentlyWorking = true
 
@@ -66,7 +70,9 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 		}
 
 		// The client swallows request errors and returns null, keeping the message in getLastError()
-		const deviceInfoResult = await withTimeout(api.deviceInfo(), 'Device info')
+		const deviceInfoRequest = api.deviceInfo()
+		pendingRequest = deviceInfoRequest
+		const deviceInfoResult = await withTimeout(deviceInfoRequest, 'Device info')
 		if (!deviceInfoResult) {
 			throw new Error(api.getLastError() ?? 'Device info request failed')
 		}
@@ -82,7 +88,9 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', 'Getting Charger Status')
 		}
 
-		const chargerStatusResult = await withTimeout(api.chargerStatus(), 'Charger status')
+		const chargerStatusRequest = api.chargerStatus()
+		pendingRequest = chargerStatusRequest
+		const chargerStatusResult = await withTimeout(chargerStatusRequest, 'Charger status')
 		if (!chargerStatusResult) {
 			throw new Error(api.getLastError() ?? 'Charger status request failed')
 		}
@@ -94,12 +102,14 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', `Charger Status: ${JSON.stringify(self.chargerStatus)}`)
 		}
 
-		if (self.CHOICES_SLOTS.length === 0) {
+		const slotChoices = buildSlotChoices(self)
+		const slotIds = (choices: { id: string }[]) => choices.map((choice) => choice.id).join(',')
+		if (slotIds(slotChoices) !== slotIds(self.CHOICES_SLOTS)) {
 			if (self.config.verbose) {
 				self.log('debug', 'Building Slot Choices')
 			}
 
-			self.CHOICES_SLOTS = buildSlotChoices(self)
+			self.CHOICES_SLOTS = slotChoices
 			UpdateFeedbacks(self)
 
 			if (self.config.verbose) {
@@ -138,6 +148,8 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.updateStatus(InstanceStatus.ConnectionFailure)
 		}
 	} finally {
+		// Hold the busy flag until a timed-out request settles, so polls don't stack up while the device is unreachable
+		await pendingRequest.catch(() => undefined)
 		if (self.apiInstance === api) {
 			self.apiCurrentlyWorking = false
 		}

@@ -7,7 +7,7 @@ export function UpdateActions(self: KLVRChargerProInstance): void {
 			description: 'Flashes the lights on the device',
 			options: [],
 			callback: async () => {
-				await self.apiInstance.deviceIdentify()
+				await self.apiInstance?.deviceIdentify()
 			},
 		},
 	})

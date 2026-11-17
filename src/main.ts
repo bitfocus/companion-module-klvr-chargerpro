@@ -16,7 +16,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 		verbose: false,
 	}
 	apiPollIntervalInstance!: NodeJS.Timeout
-	apiInstance!: ReturnType<typeof KLVRCharger>
+	apiInstance: ReturnType<typeof KLVRCharger> | null = null
 	apiCurrentlyWorking = false
 	pollOk: boolean | null = null
 
@@ -80,6 +80,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 		if (this.apiPollIntervalInstance) {
 			clearInterval(this.apiPollIntervalInstance)
 		}
+		this.apiInstance = null
 		this.log('debug', 'destroy')
 	}
 
