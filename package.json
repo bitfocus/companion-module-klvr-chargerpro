@@ -23,19 +23,19 @@
 		"yarn": "^4"
 	},
 	"dependencies": {
-		"@bitfocusas/klvr-charger": "^2.0.0",
+		"@bitfocusas/klvr-charger": "^2.0.1",
 		"@companion-module/base": "~1.15.1"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.9.1",
-		"@types/node": "^26",
-		"eslint": "^9.36.0",
+		"@types/node": "^26.6.6",
+		"eslint": "^9.39.5",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.2.11",
-		"prettier": "^3.6.2",
-		"rimraf": "^6.0.1",
+		"lint-staged": "^15.5.2",
+		"prettier": "^3.10.1",
+		"rimraf": "^6.1.4",
 		"typescript": "~6.0.3",
-		"typescript-eslint": "^8.44.1"
+		"typescript-eslint": "^8.72.2"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"lint-staged": {

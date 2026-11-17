@@ -5,7 +5,7 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@bitfocusas/klvr-charger@npm:^2.0.0":
+"@bitfocusas/klvr-charger@npm:^2.0.1":
   version: 2.0.1
   resolution: "@bitfocusas/klvr-charger@npm:2.0.1"
   dependencies:
@@ -331,7 +331,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^26":
+"@types/node@npm:*, @types/node@npm:^26.6.6":
   version: 26.6.6
   resolution: "@types/node@npm:26.6.6"
   dependencies:
@@ -1389,7 +1389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.36.0":
+"eslint@npm:^9.39.5":
   version: 9.39.5
   resolution: "eslint@npm:9.39.5"
   dependencies:
@@ -2075,17 +2075,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "klvr-chargerpro@workspace:."
   dependencies:
-    "@bitfocusas/klvr-charger": "npm:^2.0.0"
+    "@bitfocusas/klvr-charger": "npm:^2.0.1"
     "@companion-module/base": "npm:~1.15.1"
     "@companion-module/tools": "npm:^2.9.1"
-    "@types/node": "npm:^26"
-    eslint: "npm:^9.36.0"
+    "@types/node": "npm:^26.6.6"
+    eslint: "npm:^9.39.5"
     husky: "npm:^9.1.7"
-    lint-staged: "npm:^15.2.11"
-    prettier: "npm:^3.6.2"
-    rimraf: "npm:^6.0.1"
+    lint-staged: "npm:^15.5.2"
+    prettier: "npm:^3.10.1"
+    rimraf: "npm:^6.1.4"
     typescript: "npm:~6.0.3"
-    typescript-eslint: "npm:^8.44.1"
+    typescript-eslint: "npm:^8.72.2"
   languageName: unknown
   linkType: soft
 
@@ -2106,7 +2106,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:^15.2.11":
+"lint-staged@npm:^15.5.2":
   version: 15.5.2
   resolution: "lint-staged@npm:15.5.2"
   dependencies:
@@ -2681,7 +2681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.6.2":
+"prettier@npm:^3.10.1":
   version: 3.10.1
   resolution: "prettier@npm:3.10.1"
   bin:
@@ -2805,7 +2805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^6.0.1":
+"rimraf@npm:^6.1.4":
   version: 6.1.4
   resolution: "rimraf@npm:6.1.4"
   dependencies:
@@ -3179,7 +3179,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.44.1":
+"typescript-eslint@npm:^8.72.2":
   version: 8.72.2
   resolution: "typescript-eslint@npm:8.72.2"
   dependencies:
