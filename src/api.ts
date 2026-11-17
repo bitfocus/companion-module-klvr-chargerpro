@@ -21,20 +21,13 @@ export async function InitConnection(self: KLVRChargerProInstance): Promise<void
 
 		self.apiInstance = KLVRCharger(self.config.ip)
 		self.apiCurrentlyWorking = false
+		self.pollOk = null
 
-		void getData(self).catch((error: unknown) => {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			self.log('error', `Error getting data: ${errorMessage}`)
-		})
+		void getData(self)
 
 		if (self.config.enablePolling) {
 			self.log('debug', `Setting up polling with interval ${self.config.pollingInterval}ms`)
-			self.apiPollIntervalInstance = setInterval(() => {
-				getData(self).catch((error: unknown) => {
-					const errorMessage = error instanceof Error ? error.message : String(error)
-					self.log('error', `Error getting data: ${errorMessage}`)
-				})
-			}, self.config.pollingInterval)
+			self.apiPollIntervalInstance = setInterval(() => void getData(self), self.config.pollingInterval)
 		}
 
 		self.log('debug', 'API connection initialized successfully')
@@ -45,10 +38,26 @@ export async function InitConnection(self: KLVRChargerProInstance): Promise<void
 	}
 }
 
+async function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+	let timer: NodeJS.Timeout | undefined
+	try {
+		return await Promise.race([
+			promise,
+			new Promise<never>((_, reject) => {
+				timer = setTimeout(() => reject(new Error(`${label} timeout`)), 5000)
+			}),
+		])
+	} finally {
+		clearTimeout(timer)
+	}
+}
+
 async function getData(self: KLVRChargerProInstance): Promise<void> {
 	if (self.apiCurrentlyWorking) {
 		return
 	}
+	// A config change swaps apiInstance; results from the old one must not touch status
+	const api = self.apiInstance
 	try {
 		self.apiCurrentlyWorking = true
 
@@ -56,15 +65,14 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', 'Getting Device Info')
 		}
 
-		// Add timeout for deviceInfo call
-		const deviceInfoResult = await Promise.race([
-			self.apiInstance.deviceInfo(),
-			new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Device info timeout')), 5000)),
-		])
-
-		if (deviceInfoResult) {
-			self.deviceInfo = deviceInfoResult
+		// The client swallows request errors and returns null, keeping the message in getLastError()
+		const deviceInfoResult = await withTimeout(api.deviceInfo(), 'Device info')
+		if (!deviceInfoResult) {
+			throw new Error(api.getLastError() ?? 'Device info request failed')
 		}
+		if (self.apiInstance !== api) return
+
+		self.deviceInfo = deviceInfoResult
 
 		if (self.config.verbose) {
 			self.log('debug', `Device Info: ${JSON.stringify(self.deviceInfo)}`)
@@ -74,15 +82,13 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 			self.log('debug', 'Getting Charger Status')
 		}
 
-		// Add timeout for chargerStatus call
-		const chargerStatusResult = await Promise.race([
-			self.apiInstance.chargerStatus(),
-			new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Charger status timeout')), 5000)),
-		])
-
-		if (chargerStatusResult) {
-			self.chargerStatus = chargerStatusResult
+		const chargerStatusResult = await withTimeout(api.chargerStatus(), 'Charger status')
+		if (!chargerStatusResult) {
+			throw new Error(api.getLastError() ?? 'Charger status request failed')
 		}
+		if (self.apiInstance !== api) return
+
+		self.chargerStatus = chargerStatusResult
 
 		if (self.config.verbose) {
 			self.log('debug', `Charger Status: ${JSON.stringify(self.chargerStatus)}`)
@@ -116,16 +122,25 @@ async function getData(self: KLVRChargerProInstance): Promise<void> {
 		self.checkFeedbacks()
 		CheckVariables(self)
 
-		// Update status to OK when we successfully get data
-		self.updateStatus(InstanceStatus.Ok)
+		if (self.pollOk !== true) {
+			if (self.pollOk === false) {
+				self.log('info', 'Connection restored')
+			}
+			self.pollOk = true
+			self.updateStatus(InstanceStatus.Ok)
+		}
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : String(error)
-		self.log('error', `Error getting data: ${errorMessage}`)
-		// Update status to indicate connection failure
-		self.updateStatus(InstanceStatus.ConnectionFailure)
-		throw error
+		if (self.apiInstance !== api) return
+		if (self.pollOk !== false) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			self.log('error', `Error getting data: ${errorMessage}`)
+			self.pollOk = false
+			self.updateStatus(InstanceStatus.ConnectionFailure)
+		}
 	} finally {
-		self.apiCurrentlyWorking = false
+		if (self.apiInstance === api) {
+			self.apiCurrentlyWorking = false
+		}
 	}
 }
 

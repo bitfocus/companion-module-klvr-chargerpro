@@ -18,6 +18,7 @@ export class KLVRChargerProInstance extends InstanceBase<ModuleConfig> {
 	apiPollIntervalInstance!: NodeJS.Timeout
 	apiInstance!: ReturnType<typeof KLVRCharger>
 	apiCurrentlyWorking = false
+	pollOk: boolean | null = null
 
 	deviceInfo: DeviceInfo = {
 		deviceInternalTemperatureC: 0,
