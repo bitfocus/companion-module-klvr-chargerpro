@@ -81,9 +81,7 @@ export function CheckVariables(self: KLVRChargerProInstance): void {
 
 		variableValues[`battery${batteryNumber}_SlotState`] = slotStateMsg
 
-		variableValues[`battery${batteryNumber}_ChargePercent`] = Number.parseFloat(
-			battery.stateOfChargePercent.toFixed(2),
-		)
+		variableValues[`battery${batteryNumber}_ChargePercent`] = Number.parseFloat(battery.stateOfChargePercent.toFixed(2))
 		variableValues[`battery${batteryNumber}_TimeRemaining`] = battery.timeRemainingSeconds
 		variableValues[`battery${batteryNumber}_ErrorMsg`] = battery.errorMsg
 	}
